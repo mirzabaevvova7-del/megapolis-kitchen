@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>Мегаполис мебель — Ультра-Реалистик 3D Конструктор</title>
+  <title>Мегаполис мебель — 3D Ошхона Конструктори</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
@@ -14,8 +14,8 @@
     
     #canvas-container {
       width: 100%;
-      height: 300px;
-      background: linear-gradient(135deg, #cfd9df 0%, #e2ebf0 100%);
+      height: 320px;
+      background: linear-gradient(135deg, #cbd5e1 0%, #f1f5f9 100%);
       position: relative;
     }
     #three-canvas { width: 100%; height: 100%; display: block; }
@@ -83,7 +83,7 @@
 
     <!-- Фасад Ранги ва Текстураси -->
     <div class="card">
-      <h2>🎨 Фасад Ранги ва Тузилиши</h2>
+      <h2>🎨 Фасад Ранги ва Дизайни</h2>
       <div class="color-picker">
         <div class="color-btn active" style="background: #ffffff;" onclick="changeColor(0xffffff, this)"></div>
         <div class="color-btn" style="background: #f5f0eb;" onclick="changeColor(0xf5f0eb, this)"></div>
@@ -98,32 +98,36 @@
         <option value="matte">Матовый (Хира / Мат)</option>
         <option value="glossy">Глянцевый (Ялтироқ / Блеск)</option>
       </select>
+
+      <label style="margin-top:8px; display:block;">Ручка ёки Гола профил:</label>
+      <select id="handle-type" onchange="buildBaseKitchen()">
+        <option value="gola">Гола профил (Замонавий, ручкасиз)</option>
+        <option value="handles">Накладной ручкалар (Металл)</option>
+      </select>
     </div>
 
-    <!-- Девор, Пол ва Фартук ранглари -->
+    <!-- Хона ва Девор Дизайни -->
     <div class="card">
-      <h2>🏡 Хона Дизайни (Интерьер)</h2>
+      <h2>🏡 Хона Интерьери</h2>
       
       <label>Девор ранги:</label>
       <select id="wall-color" onchange="updateRoomColors()">
         <option value="0xf8fafc">Оч оқ (Светлый)</option>
         <option value="0xe2e8f0">Кулранг (Серый)</option>
         <option value="0xfef3c7">Беж (Кремовый)</option>
-        <option value="0x1e293b">Тўқ қора (Лофт)</option>
       </select>
 
-      <label style="margin-top:8px; display:block;">Пол (Ламинат/Плитка):</label>
+      <label style="margin-top:8px; display:block;">Пол (Ламинат):</label>
       <select id="floor-color" onchange="updateRoomColors()">
-        <option value="0xd2b48c">Оч ёғоч (Дуб)</option>
         <option value="0x5c4033">Тўқ ёғоч (Венге)</option>
-        <option value="0x94a3b8">Қора кафел (Мрамор)</option>
+        <option value="0xd2b48c">Оч ёғоч (Дуб)</option>
+        <option value="0x334155">Қора плитка</option>
       </select>
 
       <label style="margin-top:8px; display:block;">Фартук (Кафел):</label>
       <select id="backsplash-color" onchange="updateRoomColors()">
-        <option value="0xffffff">Оқ кафел (Блестящий)</option>
-        <option value="0x334155">Тўқ мрамор кафел</option>
-        <option value="0xd97706">Қизил / Қўнғир мозаика</option>
+        <option value="0xffffff">Оқ кафел</option>
+        <option value="0x334155">Тўқ кафел</option>
       </select>
     </div>
 
@@ -184,10 +188,11 @@
     if(tg && tg.expand) tg.expand();
 
     let scene, camera, renderer, controls;
-    let mainCabinets = [], activeColor = 0xffffff, roughnessVal = 0.6, metalnessVal = 0.05;
+    let kitchenGroup = new THREE.Group();
+    let activeColor = 0xffffff, roughnessVal = 0.6, metalnessVal = 0.05;
     let modules = { fridge: null, pinal: null, stove: null, sink: null };
     let kitchenLength = 3.0;
-    let wallMesh, floorMesh, backsplashMesh;
+    let wallMesh, floorMesh, backsplashMesh, leftWallMesh;
 
     function init3D() {
       const container = document.getElementById('canvas-container');
@@ -195,7 +200,7 @@
       scene.background = new THREE.Color(0xf1f5f9);
 
       camera = new THREE.PerspectiveCamera(40, container.clientWidth / container.clientHeight, 0.1, 100);
-      camera.position.set(0, 2.1, 4.8);
+      camera.position.set(0, 1.8, 4.5);
 
       renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('three-canvas'), antialias: true });
       renderer.setSize(container.clientWidth, container.clientHeight);
@@ -205,73 +210,103 @@
       controls = new THREE.OrbitControls(camera, renderer.domElement);
       controls.enableDamping = true;
       controls.dampingFactor = 0.05;
-      controls.maxPolarAngle = Math.PI / 2 - 0.02;
+      controls.maxPolarAngle = Math.PI / 2 - 0.01;
 
-      // Реал ёруғлик
-      const ambientLight = new THREE.AmbientLight(0xffffff, 0.75);
+      // Ёруғлик
+      const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
       scene.add(ambientLight);
       
       const dirLight = new THREE.DirectionalLight(0xffffff, 0.7);
-      dirLight.position.set(3, 7, 4);
-      dirLight.castShadow = true;
+      dirLight.position.set(3, 6, 4);
       scene.add(dirLight);
 
-      // Пол
-      const floorGeo = new THREE.PlaneGeometry(12, 12);
-      const floorMat = new THREE.MeshStandardMaterial({ color: 0xd2b48c, roughness: 0.4 });
+      // Ҳақиқий Хона (Пол ва иккита девор)
+      const floorGeo = new THREE.PlaneGeometry(8, 8);
+      const floorMat = new THREE.MeshStandardMaterial({ color: 0x5c4033, roughness: 0.5 });
       floorMesh = new THREE.Mesh(floorGeo, floorMat);
       floorMesh.rotation.x = -Math.PI / 2;
+      floorMesh.position.set(0, 0, -1);
       scene.add(floorMesh);
 
-      // Девор
-      const wallGeo = new THREE.PlaneGeometry(12, 6);
+      const wallGeo = new THREE.PlaneGeometry(8, 5);
       const wallMat = new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.9 });
       wallMesh = new THREE.Mesh(wallGeo, wallMat);
-      wallMesh.position.set(0, 3, -1.8);
+      wallMesh.position.set(0, 2.5, -2.0);
       scene.add(wallMesh);
 
+      const leftWallGeo = new THREE.PlaneGeometry(8, 5);
+      leftWallMesh = new THREE.Mesh(leftWallGeo, wallMat);
+      leftWallMesh.rotation.y = Math.PI / 2;
+      leftWallMesh.position.set(-3.5, 2.5, -1);
+      scene.add(leftWallMesh);
+
       // Фартук (кафел)
-      const bsGeo = new THREE.PlaneGeometry(10, 0.7);
+      const bsGeo = new THREE.PlaneGeometry(7, 0.65);
       const bsMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.2 });
       backsplashMesh = new THREE.Mesh(bsGeo, bsMat);
-      backsplashMesh.position.set(0, 1.25, -1.78);
+      backsplashMesh.position.set(0, 1.22, -1.98);
       scene.add(backsplashMesh);
 
+      scene.add(kitchenGroup);
       buildBaseKitchen();
       animate();
     }
 
     function buildBaseKitchen() {
-      mainCabinets.forEach(m => scene.remove(m));
-      mainCabinets = [];
+      // Эски қисмларни тозалаш
+      while(kitchenGroup.children.length > 0){ 
+        kitchenGroup.remove(kitchenGroup.children[0]); 
+      }
 
       const mat = new THREE.MeshStandardMaterial({ 
         color: activeColor, 
         roughness: roughnessVal, 
         metalness: metalnessVal 
       });
-      const topMat = new THREE.MeshStandardMaterial({ color: 0x222222, roughness: 0.3 });
+      const topMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.3 }); // Столешница
+      const handleType = document.getElementById('handle-type').value;
 
-      // Пастки шкаф
+      // Пастки шкаф корпуси
       const botGeo = new THREE.BoxGeometry(kitchenLength, 0.82, 0.6);
       const botMesh = new THREE.Mesh(botGeo, mat);
-      botMesh.position.set(0, 0.41, -1.0);
-      scene.add(botMesh);
-      mainCabinets.push(botMesh);
+      botMesh.position.set(0, 0.41, -1.5);
+      kitchenGroup.add(botMesh);
+
+      // Эшиклар ва бўлинмалар чизиқлари (Фасад эшиклари сезилиши учун)
+      const doorCount = Math.max(2, Math.round(kitchenLength / 0.6));
+      const sectionWidth = kitchenLength / doorCount;
+      const lineMat = new THREE.LineBasicMaterial({ color: 0x000000, linewidth: 2 });
+
+      for(let i = 1; i < doorCount; i++) {
+        const xPos = -kitchenLength/2 + i * sectionWidth;
+        const lineGeo = new THREE.BufferGeometry().setFromPoints([
+          new THREE.Vector3(xPos, 0.05, -1.19),
+          new THREE.Vector3(xPos, 0.80, -1.19)
+        ]);
+        const line = new THREE.Line(lineGeo, lineMat);
+        kitchenGroup.add(line);
+
+        // Агар ручка тангланган бўлса
+        if(handleType === 'handles') {
+          const handleGeo = new THREE.BoxGeometry(0.02, 0.15, 0.03);
+          const handleMat = new THREE.MeshStandardMaterial({ color: 0xcccccc, metalness: 0.9 });
+          const handleMesh = new THREE.Mesh(handleGeo, handleMat);
+          handleMesh.position.set(xPos - 0.05, 0.45, -1.17);
+          kitchenGroup.add(handleMesh);
+        }
+      }
 
       // Столешница
       const topGeo = new THREE.BoxGeometry(kitchenLength + 0.04, 0.04, 0.64);
       const topMesh = new THREE.Mesh(topGeo, topMat);
-      topMesh.position.set(0, 0.84, -0.98);
-      scene.add(topMesh);
-      mainCabinets.push(topMesh);
+      topMesh.position.set(0, 0.84, -1.48);
+      kitchenGroup.add(topMesh);
 
       // Юқори шкаф
       const upGeo = new THREE.BoxGeometry(kitchenLength, 0.65, 0.35);
       const upMesh = new THREE.Mesh(upGeo, mat);
-      upMesh.position.set(0, 1.75, -1.125);
-      scene.add(upMesh);
-      mainCabinets.push(upMesh);
+      upMesh.position.set(0, 1.75, -1.625);
+      kitchenGroup.add(upMesh);
     }
 
     function updateKitchenLength() {
@@ -287,23 +322,13 @@
       document.querySelectorAll('.color-btn').forEach(b => b.classList.remove('active'));
       el.classList.add('active');
       buildBaseKitchen();
-      if(modules.pinal) modules.pinal.material.color.setHex(hexColor);
     }
 
     function updateFinish() {
       const type = document.getElementById('finish-type').value;
-      if (type === 'matte') {
-        roughnessVal = 0.7;
-        metalnessVal = 0.02;
-      } else {
-        roughnessVal = 0.1; // Глянец (ялтироқ)
-        metalnessVal = 0.2;
-      }
+      roughnessVal = (type === 'matte') ? 0.7 : 0.1;
+      metalnessVal = (type === 'matte') ? 0.02 : 0.25;
       buildBaseKitchen();
-      if(modules.pinal) {
-        modules.pinal.material.roughness = roughnessVal;
-        modules.pinal.material.metalness = metalnessVal;
-      }
     }
 
     function updateRoomColors() {
@@ -311,7 +336,10 @@
       const floorColor = parseInt(document.getElementById('floor-color').value);
       const bsColor = parseInt(document.getElementById('backsplash-color').value);
 
-      if(wallMesh) wallMesh.material.color.setHex(wallColor);
+      if(wallMesh) {
+        wallMesh.material.color.setHex(wallColor);
+        leftWallMesh.material.color.setHex(wallColor);
+      }
       if(floorMesh) floorMesh.material.color.setHex(floorColor);
       if(backsplashMesh) backsplashMesh.material.color.setHex(bsColor);
     }
@@ -329,31 +357,31 @@
         btn.classList.add('added');
         if (type === 'fridge') {
           const geo = new THREE.BoxGeometry(0.6, 1.7, 0.6);
-          const mat = new THREE.MeshStandardMaterial({ color: 0x95a5a6, metalness: 0.5, roughness: 0.2 });
+          const mat = new THREE.MeshStandardMaterial({ color: 0x95a5a6, metalness: 0.5 });
           const mesh = new THREE.Mesh(geo, mat);
-          mesh.position.set(-kitchenLength/2 - 0.35, 0.85, -1.0);
+          mesh.position.set(-kitchenLength/2 - 0.35, 0.85, -1.5);
           scene.add(mesh);
           modules.fridge = mesh;
         } else if (type === 'pinal') {
           const geo = new THREE.BoxGeometry(0.55, 2.1, 0.55);
-          const mat = new THREE.MeshStandardMaterial({ color: activeColor, roughness: roughnessVal, metalness: metalnessVal });
+          const mat = new THREE.MeshStandardMaterial({ color: activeColor, roughness: roughnessVal });
           const mesh = new THREE.Mesh(geo, mat);
-          mesh.position.set(kitchenLength/2 + 0.3, 1.05, -1.0);
+          mesh.position.set(kitchenLength/2 + 0.3, 1.05, -1.5);
           scene.add(mesh);
           modules.pinal = mesh;
         } else if (type === 'stove') {
-          const geo = new THREE.BoxGeometry(0.5, 0.05, 0.5);
-          const mat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.3 });
+          const geo = new THREE.BoxGeometry(0.5, 0.04, 0.5);
+          const mat = new THREE.MeshStandardMaterial({ color: 0x111111 });
           const mesh = new THREE.Mesh(geo, mat);
-          mesh.position.set(-0.4, 0.88, -0.98);
+          mesh.position.set(-0.4, 0.87, -1.48);
           scene.add(mesh);
           modules.stove = mesh;
           document.getElementById('pos-stove-row').style.display = 'flex';
         } else if (type === 'sink') {
-          const geo = new THREE.BoxGeometry(0.45, 0.05, 0.4);
-          const mat = new THREE.MeshStandardMaterial({ color: 0xbdc3c7, metalness: 0.9, roughness: 0.1 });
+          const geo = new THREE.BoxGeometry(0.45, 0.04, 0.4);
+          const mat = new THREE.MeshStandardMaterial({ color: 0xbdc3c7, metalness: 0.8 });
           const mesh = new THREE.Mesh(geo, mat);
-          mesh.position.set(0.4, 0.88, -0.98);
+          mesh.position.set(0.4, 0.87, -1.48);
           scene.add(mesh);
           modules.sink = mesh;
           document.getElementById('pos-sink-row').style.display = 'flex';
@@ -389,12 +417,9 @@
     function sendToBot() {
       const len = document.getElementById('length').value;
       const total = document.getElementById('total-price').innerText;
-      const finish = document.getElementById('finish-type').value;
       const data = {
         city: "Самарқанд",
         length: len + " метр",
-        finish: finish,
-        material: document.getElementById('material').options[document.getElementById('material').selectedIndex].text,
         totalPrice: total
       };
       if(tg && tg.sendData) {
