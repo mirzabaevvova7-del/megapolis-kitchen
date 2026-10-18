@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Мегаполис мебель — Ошхона Конструктори</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: #f4f5f7;
+      margin: 0;
+      padding: 15px;
+      color: #333;
+    }
+    .card {
+      background: #ffffff;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 15px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+    h2 {
+      margin-top: 0;
+      font-size: 18px;
+      color: #1a1a1a;
+      border-bottom: 2px solid #e1e4e8;
+      padding-bottom: 8px;
+    }
+    label {
+      display: block;
+      margin-top: 10px;
+      font-weight: 600;
+      font-size: 14px;
+    }
+    select, input[type="number"] {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      box-sizing: border-box;
+      font-size: 15px;
+    }
+    .checkbox-group {
+      display: flex;
+      align-items: center;
+      margin-top: 8px;
+    }
+    .checkbox-group input {
+      width: 20px;
+      height: 20px;
+      margin-right: 10px;
+    }
+    .price-box {
+      background: #e8f5e9;
+      border: 1px solid #a5d6a7;
+      border-radius: 10px;
+      padding: 15px;
+      text-align: center;
+      margin-top: 15px;
+    }
+    .price-title {
+      font-size: 14px;
+      color: #2e7d32;
+    }
+    .price-value {
+      font-size: 22px;
+      font-weight: bold;
+      color: #1b5e20;
+      margin-top: 5px;
+    }
+    button.btn-send {
+      width: 100%;
+      background-color: #2481cc;
+      color: #fff;
+      border: none;
+      padding: 14px;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: bold;
+      margin-top: 15px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    <h2>🍳 Ошхона тузилиши ва ўлчами</h2>
+    
+    <label for="shape">Ошхона шакли:</label>
+    <select id="shape" onchange="calculatePrice()">
+      <option value="Прямой">Прямой (Тўғри)</option>
+      <option value="Угловой">Угловой (Г-симон)</option>
+      <option value="П-образный">П-образный</option>
+    </select>
+
+    <label for="length">Умумий узунлиги (метр):</label>
+    <input type="number" id="length" value="3" min="1" step="0.5" oninput="calculatePrice()">
+  </div>
+
+  <div class="card">
+    <h2>✨ Материал ва Қўшимчалар</h2>
+    
+    <label for="material">Фасад материали:</label>
+    <select id="material" onchange="calculatePrice()">
+      <option value="3800000">ЛДСП (3,800,000 сўм/м)</option>
+      <option value="4500000">Акрил (4,500,000 сўм/м)</option>
+      <option value="6000000">Крашенный (6,000,000 сўм/м)</option>
+    </select>
+
+    <label for="sink">Мойка тури:</label>
+    <select id="sink" onchange="calculatePrice()">
+      <option value="Дўмолоқ">Дўмолоқ мойка</option>
+      <option value="Квадратный">Квадрат мойка</option>
+    </select>
+
+    <div class="checkbox-group" style="margin-top:15px;">
+      <input type="checkbox" id="pinal" onchange="calculatePrice()">
+      <label for="pinal" style="margin:0;">Пенал қўшиш (+1,500,000 сўм)</label>
+    </div>
+
+    <div class="checkbox-group">
+      <input type="checkbox" id="antresol" onchange="calculatePrice()">
+      <label for="antresol" style="margin:0;">Антресоль (Шкаф тепасига) (+1,200,000 сўм)</label>
+    </div>
+
+    <div class="checkbox-group">
+      <input type="checkbox" id="oven" onchange="calculatePrice()">
+      <label for="oven" style="margin:0;">Духовка ва Микроволновка жойи</label>
+    </div>
+  </div>
+
+  <div class="price-box">
+    <div class="price-title">Тахминий ҳисобланган нарх:</div>
+    <div class="price-value" id="totalPrice">0 сўм</div>
+  </div>
+
+  <button class="btn-send" onclick="sendData()">Ҳисобни ботга юбориш</button>
+
+  <script>
+    const tg = window.Telegram.WebApp;
+    tg.expand();
+
+    function calculatePrice() {
+      const materialPrice = parseInt(document.getElementById('material').value);
+      const length = parseFloat(document.getElementById('length').value) || 0;
+      
+      let total = materialPrice * length;
+
+      if (document.getElementById('pinal').checked) total += 1500000;
+      if (document.getElementById('antresol').checked) total += 1200000;
+
+      document.getElementById('totalPrice').innerText = total.toLocaleString('uz-UZ') + " сўм";
+      return total;
+    }
+
+    function sendData() {
+      const shape = document.getElementById('shape').value;
+      const length = document.getElementById('length').value;
+      const materialText = document.getElementById('material').options[document.getElementById('material').selectedIndex].text;
+      const sink = document.getElementById('sink').value;
+      const pinal = document.getElementById('pinal').checked ? "Ҳа" : "Йўқ";
+      const antresol = document.getElementById('antresol').checked ? "Ҳа" : "Йўқ";
+      const oven = document.getElementById('oven').checked ? "Ҳа" : "Йўқ";
+      const total = calculatePrice().toLocaleString('uz-UZ') + " сўм";
+
+      const data = {
+        shape,
+        length,
+        material: materialText,
+        sink,
+        pinal,
+        antresol,
+        oven,
+        total
+      };
+
+      tg.sendData(JSON.stringify(data));
+    }
+
+    calculatePrice();
+  </script>
+</body>
+</html>
