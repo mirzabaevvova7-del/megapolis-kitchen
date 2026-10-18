@@ -3,68 +3,86 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>Мегаполис мебель — 3D Ошхона Конструктори</title>
+  <title>MEGAPOLIS — Ошхона Конструктори</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
   
   <style>
     * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-    body { margin: 0; padding: 0; background-color: #f4f5f7; color: #333; }
+    body { margin: 0; padding: 0; background-color: #f4f5f0; color: #2d3748; }
     
+    /* Юқори бренд панели */
+    .brand-header {
+      background: #fff; padding: 12px 16px; display: flex; align-items: center; gap: 12px;
+      border-bottom: 1px solid #e2e8f0; font-weight: bold; font-size: 15px; color: #1a202c;
+    }
+    .brand-logo {
+      background: #1a202c; color: #fff; width: 32px; height: 32px; display: flex;
+      align-items: center; justify-content: center; border-radius: 6px; font-size: 14px;
+    }
+
     #canvas-container {
       width: 100%;
-      height: 320px;
-      background: linear-gradient(135deg, #cbd5e1 0%, #f1f5f9 100%);
+      height: 310px;
+      background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%);
       position: relative;
     }
     #three-canvas { width: 100%; height: 100%; display: block; }
     .hint-3d {
       position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%);
-      background: rgba(0,0,0,0.7); color: #fff; font-size: 11px; padding: 4px 12px;
+      background: rgba(0,0,0,0.75); color: #fff; font-size: 11px; padding: 4px 12px;
       border-radius: 12px; pointer-events: none;
     }
 
-    .container { padding: 12px; }
-    .card { background: #fff; border-radius: 12px; padding: 14px; margin-bottom: 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.05); }
-    h2 { font-size: 15px; margin: 0 0 10px 0; color: #1a1a1a; border-bottom: 1px solid #eee; padding-bottom: 6px; }
+    .container { padding: 14px; }
+    .card { background: #fff; border-radius: 14px; padding: 16px; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); border: 1px solid #edf2f7; }
+    .section-title { font-size: 14px; font-weight: bold; margin: 0 0 12px 0; color: #2d3748; display: flex; align-items: center; gap: 6px; }
 
-    .color-picker { display: flex; gap: 10px; margin-top: 8px; flex-wrap: wrap; }
-    .color-btn {
-      width: 34px; height: 34px; border-radius: 50%; border: 2px solid #ccc; cursor: pointer; transition: 0.2s;
+    /* Ранг ва палитра карточкалари */
+    .color-grid { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
+    .color-option {
+      width: 38px; height: 38px; border-radius: 50%; border: 2px solid #e2e8f0; cursor: pointer; transition: 0.2s;
     }
-    .color-btn.active { border-color: #2481cc; transform: scale(1.15); box-shadow: 0 0 8px rgba(36,129,204,0.6); }
+    .color-option.active { border-color: #d97706; transform: scale(1.15); box-shadow: 0 0 8px rgba(217,119,6,0.4); }
 
+    /* Модуллар сеткаси */
     .modules-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-    .mod-btn {
-      padding: 10px; border: 1px solid #d1d5db; background: #f9fafb; border-radius: 8px;
-      font-size: 13px; font-weight: 600; cursor: pointer; text-align: center; display: flex; align-items: center; justify-content: center; gap: 6px;
+    .mod-card {
+      padding: 12px; border: 1px solid #e2e8f0; background: #fafafa; border-radius: 10px;
+      font-size: 13px; font-weight: 600; cursor: pointer; text-align: center; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s;
     }
-    .mod-btn.added { background: #e0f2fe; border-color: #0284c7; color: #0369a1; }
+    .mod-card.added { background: #fdf8f6; border-color: #d97706; color: #b45309; box-shadow: 0 2px 4px rgba(217,119,6,0.1); }
 
     .pos-controls { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
-    .pos-row { display: flex; justify-content: space-between; align-items: center; font-size: 13px; background: #f8fafc; padding: 6px 10px; border-radius: 6px; }
-    .btn-step { background: #2481cc; color: white; border: none; padding: 4px 10px; border-radius: 4px; font-weight: bold; cursor: pointer; }
+    .pos-row { display: flex; justify-content: space-between; align-items: center; font-size: 13px; background: #f7fafc; padding: 8px 12px; border-radius: 8px; }
+    .btn-step { background: #1a202c; color: white; border: none; padding: 6px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; }
 
-    select, input[type="number"] { width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #ccc; margin-top: 4px; font-size: 14px; }
+    select, input[type="number"] { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #cbd5e1; margin-top: 4px; font-size: 14px; background: #fff; }
     
-    .price-card { background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 10px; padding: 12px; text-align: center; }
-    .price-val { font-size: 20px; font-weight: bold; color: #047857; margin-top: 4px; }
+    .price-card { background: #1a202c; color: #fff; border-radius: 14px; padding: 16px; text-align: center; margin-bottom: 12px; }
+    .price-title { font-size: 13px; color: #a0aec0; }
+    .price-val { font-size: 24px; font-weight: bold; color: #f6ad55; margin-top: 4px; }
 
-    .location-box { font-size: 13px; color: #555; margin-top: 6px; line-height: 1.4; }
+    .location-box { font-size: 13px; color: #4a5568; line-height: 1.5; background: #f7fafc; padding: 10px; border-radius: 8px; margin-top: 6px; }
 
     .btn-submit {
-      width: 100%; background: #2481cc; color: white; border: none; padding: 14px;
-      border-radius: 10px; font-size: 16px; font-weight: bold; margin-top: 10px; cursor: pointer;
+      width: 100%; background: #d97706; color: white; border: none; padding: 14px;
+      border-radius: 12px; font-size: 15px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 12px rgba(217,119,6,0.3);
     }
     .btn-admin {
-      width: 100%; background: #22c55e; color: white; border: none; padding: 12px;
-      border-radius: 10px; font-size: 15px; font-weight: bold; margin-top: 8px; cursor: pointer;
+      width: 100%; background: #2f855a; color: white; border: none; padding: 12px;
+      border-radius: 12px; font-size: 14px; font-weight: bold; margin-top: 8px; cursor: pointer;
       display: flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; text-align: center;
     }
   </style>
 </head>
 <body>
+
+  <div class="brand-header">
+    <div class="brand-logo">M</div>
+    <div>MEGAPOLIS <span style="font-weight: normal; color: #718096; font-size: 13px;">| Самарқанд</span></div>
+  </div>
 
   <div id="canvas-container">
     <canvas id="three-canvas"></canvas>
@@ -74,70 +92,71 @@
   <div class="container">
     
     <div class="card">
-      <h2>📍 Шоурум ва Манзил</h2>
+      <div class="section-title">📍 Шоурум ва Манзил</div>
       <div class="location-box">
         <b>Манзил:</b> Самарқанд шаҳри, Мегаполис мебель шоуруми<br>
-        <b>Етказиб бериш:</b> Самарқанд вилояти бўйлаб бепул
+        <b>Етказиб бериш:</b> Самарқанд вилояти бўйлаб бепул ва ўрнатиб берилади.
       </div>
     </div>
 
     <!-- Фасад Ранги ва Текстураси -->
     <div class="card">
-      <h2>🎨 Фасад Ранги ва Дизайни</h2>
-      <div class="color-picker">
-        <div class="color-btn active" style="background: #ffffff;" onclick="changeColor(0xffffff, this)"></div>
-        <div class="color-btn" style="background: #f5f0eb;" onclick="changeColor(0xf5f0eb, this)"></div>
-        <div class="color-btn" style="background: #8b5a2b;" onclick="changeColor(0x8b5a2b, this)"></div>
-        <div class="color-btn" style="background: #36454f;" onclick="changeColor(0x36454f, this)"></div>
-        <div class="color-btn" style="background: #111111;" onclick="changeColor(0x111111, this)"></div>
-        <div class="color-btn" style="background: #a93226;" onclick="changeColor(0xa93226, this)"></div>
+      <div class="section-title">🎨 Фасад ранги ва дизайн</div>
+      <div class="color-grid">
+        <div class="color-option active" style="background: #ffffff;" onclick="changeColor(0xffffff, this)"></div>
+        <div class="color-option" style="background: #f5f0eb;" onclick="changeColor(0xf5f0eb, this)"></div>
+        <div class="color-option" style="background: #8b5a2b;" onclick="changeColor(0x8b5a2b, this)"></div>
+        <div class="color-option" style="background: #36454f;" onclick="changeColor(0x36454f, this)"></div>
+        <div class="color-option" style="background: #111111;" onclick="changeColor(0x111111, this)"></div>
+        <div class="color-option" style="background: #a93226;" onclick="changeColor(0xa93226, this)"></div>
       </div>
       
-      <label style="margin-top:10px; display:block;">Қоплама (Текстура):</label>
+      <label style="font-size:12px; font-weight:600; color:#4a5568; display:block; margin-top:8px;">Қоплама тури:</label>
       <select id="finish-type" onchange="updateFinish()">
         <option value="matte">Матовый (Хира / Мат)</option>
         <option value="glossy">Глянцевый (Ялтироқ / Блеск)</option>
       </select>
 
-      <label style="margin-top:8px; display:block;">Ручка ёки Гола профил:</label>
+      <label style="font-size:12px; font-weight:600; color:#4a5568; display:block; margin-top:8px;">Ручка ёки Гола профил:</label>
       <select id="handle-type" onchange="buildBaseKitchen()">
         <option value="gola">Гола профил (Замонавий, ручкасиз)</option>
         <option value="handles">Накладной ручкалар (Металл)</option>
       </select>
     </div>
 
-    <!-- Хона ва Девор Дизайни -->
+    <!-- Хона Интерьери -->
     <div class="card">
-      <h2>🏡 Хона Интерьери</h2>
+      <div class="section-title">🏡 Хона интерьери</div>
       
-      <label>Девор ранги:</label>
+      <label style="font-size:12px; font-weight:600; color:#4a5568;">Девор ранги:</label>
       <select id="wall-color" onchange="updateRoomColors()">
         <option value="0xf8fafc">Оч оқ (Светлый)</option>
         <option value="0xe2e8f0">Кулранг (Серый)</option>
         <option value="0xfef3c7">Беж (Кремовый)</option>
       </select>
 
-      <label style="margin-top:8px; display:block;">Пол (Ламинат):</label>
+      <label style="font-size:12px; font-weight:600; color:#4a5568; margin-top:8px; display:block;">Пол (Ламинат):</label>
       <select id="floor-color" onchange="updateRoomColors()">
         <option value="0x5c4033">Тўқ ёғоч (Венге)</option>
         <option value="0xd2b48c">Оч ёғоч (Дуб)</option>
         <option value="0x334155">Қора плитка</option>
       </select>
 
-      <label style="margin-top:8px; display:block;">Фартук (Кафел):</label>
+      <label style="font-size:12px; font-weight:600; color:#4a5568; margin-top:8px; display:block;">Фартук (Кафел):</label>
       <select id="backsplash-color" onchange="updateRoomColors()">
         <option value="0xffffff">Оқ кафел</option>
         <option value="0x334155">Тўқ кафел</option>
       </select>
     </div>
 
+    <!-- Модуллар -->
     <div class="card">
-      <h2>🧩 Ошхона Модуллари</h2>
+      <div class="section-title">🧩 Ошхона модуллари</div>
       <div class="modules-grid">
-        <button class="mod-btn" id="btn-fridge" onclick="toggleModule('fridge')">🧊 Музлатгич</button>
-        <button class="mod-btn" id="btn-pinal" onclick="toggleModule('pinal')">🗄️ Пенал</button>
-        <button class="mod-btn" id="btn-stove" onclick="toggleModule('stove')">🔥 Газ Плита</button>
-        <button class="mod-btn" id="btn-sink" onclick="toggleModule('sink')">🚰 Мойка</button>
+        <div class="mod-card" id="btn-fridge" onclick="toggleModule('fridge')">🧊 Музлатгич</div>
+        <div class="mod-card" id="btn-pinal" onclick="toggleModule('pinal')">🗄️ Пенал</div>
+        <div class="mod-card" id="btn-stove" onclick="toggleModule('stove')">🔥 Газ Плита</div>
+        <div class="mod-card" id="btn-sink" onclick="toggleModule('sink')">🚰 Мойка</div>
       </div>
 
       <div class="pos-controls">
@@ -158,12 +177,13 @@
       </div>
     </div>
 
+    <!-- Ўлчам ва Материал -->
     <div class="card">
-      <h2>📏 Ўлчам ва Материал</h2>
-      <label>Узунлиги (метр):</label>
+      <div class="section-title">📏 Ўлчам ва Материал</div>
+      <label style="font-size:12px; font-weight:600; color:#4a5568;">Узунлиги (метр):</label>
       <input type="number" id="length" value="3.0" min="1.5" max="6.0" step="0.1" oninput="updateKitchenLength(); calculateTotal();">
       
-      <label style="margin-top:10px; display:block;">Материал тури:</label>
+      <label style="font-size:12px; font-weight:600; color:#4a5568; margin-top:8px; display:block;">Материал тури:</label>
       <select id="material" onchange="calculateTotal()">
         <option value="3800000">ЛДСП (3,800,000 сўм/м)</option>
         <option value="4500000">Акрил (4,500,000 сўм/м)</option>
@@ -172,7 +192,7 @@
     </div>
 
     <div class="price-card">
-      <div>Тахминий Умумий Нарх:</div>
+      <div class="price-title">Тахминий умумий нарх:</div>
       <div class="price-val" id="total-price">0 сўм</div>
     </div>
 
@@ -212,7 +232,6 @@
       controls.dampingFactor = 0.05;
       controls.maxPolarAngle = Math.PI / 2 - 0.01;
 
-      // Ёруғлик
       const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
       scene.add(ambientLight);
       
@@ -220,7 +239,6 @@
       dirLight.position.set(3, 6, 4);
       scene.add(dirLight);
 
-      // Ҳақиқий Хона (Пол ва иккита девор)
       const floorGeo = new THREE.PlaneGeometry(8, 8);
       const floorMat = new THREE.MeshStandardMaterial({ color: 0x5c4033, roughness: 0.5 });
       floorMesh = new THREE.Mesh(floorGeo, floorMat);
@@ -240,7 +258,6 @@
       leftWallMesh.position.set(-3.5, 2.5, -1);
       scene.add(leftWallMesh);
 
-      // Фартук (кафел)
       const bsGeo = new THREE.PlaneGeometry(7, 0.65);
       const bsMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.2 });
       backsplashMesh = new THREE.Mesh(bsGeo, bsMat);
@@ -253,7 +270,6 @@
     }
 
     function buildBaseKitchen() {
-      // Эски қисмларни тозалаш
       while(kitchenGroup.children.length > 0){ 
         kitchenGroup.remove(kitchenGroup.children[0]); 
       }
@@ -263,19 +279,17 @@
         roughness: roughnessVal, 
         metalness: metalnessVal 
       });
-      const topMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.3 }); // Столешница
+      const topMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.3 });
       const handleType = document.getElementById('handle-type').value;
 
-      // Пастки шкаф корпуси
       const botGeo = new THREE.BoxGeometry(kitchenLength, 0.82, 0.6);
       const botMesh = new THREE.Mesh(botGeo, mat);
       botMesh.position.set(0, 0.41, -1.5);
       kitchenGroup.add(botMesh);
 
-      // Эшиклар ва бўлинмалар чизиқлари (Фасад эшиклари сезилиши учун)
       const doorCount = Math.max(2, Math.round(kitchenLength / 0.6));
       const sectionWidth = kitchenLength / doorCount;
-      const lineMat = new THREE.LineBasicMaterial({ color: 0x000000, linewidth: 2 });
+      const lineMat = new THREE.LineBasicMaterial({ color: 0x333333, linewidth: 2 });
 
       for(let i = 1; i < doorCount; i++) {
         const xPos = -kitchenLength/2 + i * sectionWidth;
@@ -286,7 +300,6 @@
         const line = new THREE.Line(lineGeo, lineMat);
         kitchenGroup.add(line);
 
-        // Агар ручка тангланган бўлса
         if(handleType === 'handles') {
           const handleGeo = new THREE.BoxGeometry(0.02, 0.15, 0.03);
           const handleMat = new THREE.MeshStandardMaterial({ color: 0xcccccc, metalness: 0.9 });
@@ -296,13 +309,11 @@
         }
       }
 
-      // Столешница
       const topGeo = new THREE.BoxGeometry(kitchenLength + 0.04, 0.04, 0.64);
       const topMesh = new THREE.Mesh(topGeo, topMat);
       topMesh.position.set(0, 0.84, -1.48);
       kitchenGroup.add(topMesh);
 
-      // Юқори шкаф
       const upGeo = new THREE.BoxGeometry(kitchenLength, 0.65, 0.35);
       const upMesh = new THREE.Mesh(upGeo, mat);
       upMesh.position.set(0, 1.75, -1.625);
@@ -319,7 +330,7 @@
 
     function changeColor(hexColor, el) {
       activeColor = hexColor;
-      document.querySelectorAll('.color-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.color-option').forEach(b => b.classList.remove('active'));
       el.classList.add('active');
       buildBaseKitchen();
     }
