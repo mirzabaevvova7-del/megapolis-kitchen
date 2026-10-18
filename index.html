@@ -3,77 +3,95 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>MEGAPOLIS — Ошхона Конструктори</title>
+  <title>MEGAPOLIS — 3D Ошхона Конструктори</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
   
   <style>
-    * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-    body { margin: 0; padding: 0; background-color: #f4f5f0; color: #2d3748; }
-    
-    /* Юқори бренд панели */
-    .brand-header {
-      background: #fff; padding: 12px 16px; display: flex; align-items: center; gap: 12px;
-      border-bottom: 1px solid #e2e8f0; font-weight: bold; font-size: 15px; color: #1a202c;
-    }
-    .brand-logo {
-      background: #1a202c; color: #fff; width: 32px; height: 32px; display: flex;
-      align-items: center; justify-content: center; border-radius: 6px; font-size: 14px;
+    :root {
+      --primary: #c29b38;
+      --primary-dark: #a6802a;
+      --bg-color: #f8fafc;
+      --card-bg: #ffffff;
+      --text-main: #1e293b;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
     }
 
+    * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { margin: 0; padding: 0; background-color: var(--bg-color); color: var(--text-main); }
+    
+    /* Замонавий Юқори Бренд Панели */
+    .brand-header {
+      background: var(--card-bg); padding: 14px 18px; display: flex; align-items: center; gap: 14px;
+      border-bottom: 1px solid var(--border); box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+    }
+    .brand-logo {
+      background: linear-gradient(135deg, #1e293b, #0f172a); color: #fff; width: 36px; height: 36px; display: flex;
+      align-items: center; justify-content: center; border-radius: 10px; font-size: 16px; font-weight: bold;
+    }
+    .brand-title { font-weight: 700; font-size: 16px; color: var(--text-main); }
+    .brand-sub { font-weight: 400; color: var(--text-muted); font-size: 12px; }
+
+    /* 3D Саҳна Ойнаси */
     #canvas-container {
       width: 100%;
-      height: 310px;
-      background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%);
+      height: 320px;
+      background: linear-gradient(135deg, #f1f5f9 0%, #cbd5e1 100%);
       position: relative;
     }
     #three-canvas { width: 100%; height: 100%; display: block; }
     .hint-3d {
-      position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%);
-      background: rgba(0,0,0,0.75); color: #fff; font-size: 11px; padding: 4px 12px;
-      border-radius: 12px; pointer-events: none;
+      position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%);
+      background: rgba(15, 23, 42, 0.75); color: #fff; font-size: 11px; padding: 5px 14px;
+      border-radius: 20px; pointer-events: none; backdrop-filter: blur(4px);
     }
 
-    .container { padding: 14px; }
-    .card { background: #fff; border-radius: 14px; padding: 16px; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); border: 1px solid #edf2f7; }
-    .section-title { font-size: 14px; font-weight: bold; margin: 0 0 12px 0; color: #2d3748; display: flex; align-items: center; gap: 6px; }
+    .container { padding: 16px; max-width: 600px; margin: 0 auto; }
+    .card { background: var(--card-bg); border-radius: 16px; padding: 16px; margin-bottom: 14px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); border: 1px solid var(--border); }
+    .section-title { font-size: 14px; font-weight: 700; margin: 0 0 12px 0; color: var(--text-main); display: flex; align-items: center; gap: 8px; }
 
-    /* Ранг ва палитра карточкалари */
-    .color-grid { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
+    /* Ранг карточкалари */
+    .color-grid { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 10px; }
     .color-option {
-      width: 38px; height: 38px; border-radius: 50%; border: 2px solid #e2e8f0; cursor: pointer; transition: 0.2s;
+      width: 40px; height: 40px; border-radius: 50%; border: 3px solid #fff; cursor: pointer; 
+      box-shadow: 0 2px 6px rgba(0,0,0,0.15); transition: 0.2s;
     }
-    .color-option.active { border-color: #d97706; transform: scale(1.15); box-shadow: 0 0 8px rgba(217,119,6,0.4); }
+    .color-option.active { border-color: var(--primary); transform: scale(1.12); }
 
     /* Модуллар сеткаси */
-    .modules-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .modules-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
     .mod-card {
-      padding: 12px; border: 1px solid #e2e8f0; background: #fafafa; border-radius: 10px;
+      padding: 12px; border: 1px solid var(--border); background: #fdfdfd; border-radius: 12px;
       font-size: 13px; font-weight: 600; cursor: pointer; text-align: center; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s;
     }
-    .mod-card.added { background: #fdf8f6; border-color: #d97706; color: #b45309; box-shadow: 0 2px 4px rgba(217,119,6,0.1); }
+    .mod-card.added { background: #fffbeb; border-color: #f59e0b; color: #b45309; box-shadow: 0 2px 6px rgba(245,158,11,0.15); }
 
-    .pos-controls { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
-    .pos-row { display: flex; justify-content: space-between; align-items: center; font-size: 13px; background: #f7fafc; padding: 8px 12px; border-radius: 8px; }
-    .btn-step { background: #1a202c; color: white; border: none; padding: 6px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; }
+    .pos-controls { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
+    .pos-row { display: flex; justify-content: space-between; align-items: center; font-size: 13px; background: #f8fafc; padding: 8px 12px; border-radius: 10px; border: 1px solid var(--border); }
+    .btn-step { background: #1e293b; color: white; border: none; padding: 6px 14px; border-radius: 8px; font-weight: bold; cursor: pointer; }
 
-    select, input[type="number"] { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #cbd5e1; margin-top: 4px; font-size: 14px; background: #fff; }
+    select, input[type="number"] { width: 100%; padding: 11px 14px; border-radius: 10px; border: 1px solid var(--border); margin-top: 6px; font-size: 14px; background: #fff; color: var(--text-main); outline: none; transition: 0.2s; }
+    select:focus, input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(194,155,56,0.15); }
     
-    .price-card { background: #1a202c; color: #fff; border-radius: 14px; padding: 16px; text-align: center; margin-bottom: 12px; }
-    .price-title { font-size: 13px; color: #a0aec0; }
-    .price-val { font-size: 24px; font-weight: bold; color: #f6ad55; margin-top: 4px; }
+    .price-card { background: linear-gradient(135deg, #0f172a, #1e293b); color: #fff; border-radius: 16px; padding: 18px; text-align: center; margin-bottom: 14px; box-shadow: 0 6px 16px rgba(15,23,42,0.15); }
+    .price-title { font-size: 13px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; }
+    .price-val { font-size: 26px; font-weight: 800; color: #fbbf24; margin-top: 6px; }
 
-    .location-box { font-size: 13px; color: #4a5568; line-height: 1.5; background: #f7fafc; padding: 10px; border-radius: 8px; margin-top: 6px; }
+    .location-box { font-size: 13px; color: var(--text-muted); line-height: 1.6; background: #f8fafc; padding: 12px; border-radius: 10px; border: 1px solid var(--border); margin-top: 6px; }
 
     .btn-submit {
-      width: 100%; background: #d97706; color: white; border: none; padding: 14px;
-      border-radius: 12px; font-size: 15px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 12px rgba(217,119,6,0.3);
+      width: 100%; background: linear-gradient(135deg, #f59e0b, #d97706); color: white; border: none; padding: 15px;
+      border-radius: 14px; font-size: 16px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 14px rgba(245,158,11,0.3); transition: 0.2s;
     }
+    .btn-submit:active { transform: scale(0.98); }
+
     .btn-admin {
-      width: 100%; background: #2f855a; color: white; border: none; padding: 12px;
-      border-radius: 12px; font-size: 14px; font-weight: bold; margin-top: 8px; cursor: pointer;
+      width: 100%; background: #10b981; color: white; border: none; padding: 13px;
+      border-radius: 14px; font-size: 14px; font-weight: 700; margin-top: 10px; cursor: pointer;
       display: flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; text-align: center;
+      box-shadow: 0 4px 12px rgba(16,185,129,0.2);
     }
   </style>
 </head>
@@ -81,7 +99,10 @@
 
   <div class="brand-header">
     <div class="brand-logo">M</div>
-    <div>MEGAPOLIS <span style="font-weight: normal; color: #718096; font-size: 13px;">| Самарқанд</span></div>
+    <div>
+      <div class="brand-title">MEGAPOLIS MEBEL</div>
+      <div class="brand-sub">Самарқанд шаҳри • Расмий 3D Конструктор</div>
+    </div>
   </div>
 
   <div id="canvas-container">
@@ -92,14 +113,14 @@
   <div class="container">
     
     <div class="card">
-      <div class="section-title">📍 Шоурум ва Манзил</div>
+      <div class="section-title">📍 Шоурум ва Маълумот</div>
       <div class="location-box">
         <b>Манзил:</b> Самарқанд шаҳри, Мегаполис мебель шоуруми<br>
-        <b>Етказиб бериш:</b> Самарқанд вилояти бўйлаб бепул ва ўрнатиб берилади.
+        <b>Етказиб бериш:</b> Самарқанд вилояти бўйлаб бепул ва кафолатли ўрнатиб берилади.
       </div>
     </div>
 
-    <!-- Фасад Ранги ва Текстураси -->
+    <!-- Фасад Ранги ва Дизайни -->
     <div class="card">
       <div class="section-title">🎨 Фасад ранги ва дизайн</div>
       <div class="color-grid">
@@ -111,13 +132,13 @@
         <div class="color-option" style="background: #a93226;" onclick="changeColor(0xa93226, this)"></div>
       </div>
       
-      <label style="font-size:12px; font-weight:600; color:#4a5568; display:block; margin-top:8px;">Қоплама тури:</label>
+      <label style="font-size:12px; font-weight:600; color:var(--text-muted); display:block; margin-top:8px;">Қоплама тури:</label>
       <select id="finish-type" onchange="updateFinish()">
         <option value="matte">Матовый (Хира / Мат)</option>
         <option value="glossy">Глянцевый (Ялтироқ / Блеск)</option>
       </select>
 
-      <label style="font-size:12px; font-weight:600; color:#4a5568; display:block; margin-top:8px;">Ручка ёки Гола профил:</label>
+      <label style="font-size:12px; font-weight:600; color:var(--text-muted); display:block; margin-top:10px;">Ручка ёки Гола профил:</label>
       <select id="handle-type" onchange="buildBaseKitchen()">
         <option value="gola">Гола профил (Замонавий, ручкасиз)</option>
         <option value="handles">Накладной ручкалар (Металл)</option>
@@ -128,21 +149,21 @@
     <div class="card">
       <div class="section-title">🏡 Хона интерьери</div>
       
-      <label style="font-size:12px; font-weight:600; color:#4a5568;">Девор ранги:</label>
+      <label style="font-size:12px; font-weight:600; color:var(--text-muted);">Девор ранги:</label>
       <select id="wall-color" onchange="updateRoomColors()">
         <option value="0xf8fafc">Оч оқ (Светлый)</option>
         <option value="0xe2e8f0">Кулранг (Серый)</option>
         <option value="0xfef3c7">Беж (Кремовый)</option>
       </select>
 
-      <label style="font-size:12px; font-weight:600; color:#4a5568; margin-top:8px; display:block;">Пол (Ламинат):</label>
+      <label style="font-size:12px; font-weight:600; color:var(--text-muted); margin-top:10px; display:block;">Пол (Ламинат):</label>
       <select id="floor-color" onchange="updateRoomColors()">
         <option value="0x5c4033">Тўқ ёғоч (Венге)</option>
         <option value="0xd2b48c">Оч ёғоч (Дуб)</option>
         <option value="0x334155">Қора плитка</option>
       </select>
 
-      <label style="font-size:12px; font-weight:600; color:#4a5568; margin-top:8px; display:block;">Фартук (Кафел):</label>
+      <label style="font-size:12px; font-weight:600; color:var(--text-muted); margin-top:10px; display:block;">Фартук (Кафел):</label>
       <select id="backsplash-color" onchange="updateRoomColors()">
         <option value="0xffffff">Оқ кафел</option>
         <option value="0x334155">Тўқ кафел</option>
@@ -180,278 +201,8 @@
     <!-- Ўлчам ва Материал -->
     <div class="card">
       <div class="section-title">📏 Ўлчам ва Материал</div>
-      <label style="font-size:12px; font-weight:600; color:#4a5568;">Узунлиги (метр):</label>
+      <label style="font-size:12px; font-weight:600; color:var(--text-muted);">Узунлиги (метр):</label>
       <input type="number" id="length" value="3.0" min="1.5" max="6.0" step="0.1" oninput="updateKitchenLength(); calculateTotal();">
       
-      <label style="font-size:12px; font-weight:600; color:#4a5568; margin-top:8px; display:block;">Материал тури:</label>
+      <label style="font-size:12px; font-weight:600; color:var(--text-muted); margin-top:10px; display:block;">Материал тури:</label>
       <select id="material" onchange="calculateTotal()">
-        <option value="3800000">ЛДСП (3,800,000 сўм/м)</option>
-        <option value="4500000">Акрил (4,500,000 сўм/м)</option>
-        <option value="6000000">Крашенный (6,000,000 сўм/м)</option>
-      </select>
-    </div>
-
-    <div class="price-card">
-      <div class="price-title">Тахминий умумий нарх:</div>
-      <div class="price-val" id="total-price">0 сўм</div>
-    </div>
-
-    <button class="btn-submit" onclick="sendToBot()">Буюртма ва Лойиҳани Юбориш</button>
-    
-    <a href="https://t.me/admin_username" class="btn-admin" target="_blank">
-      👨‍💼 Админ билан боғланиш
-    </a>
-  </div>
-
-  <script>
-    const tg = window.Telegram.WebApp;
-    if(tg && tg.expand) tg.expand();
-
-    let scene, camera, renderer, controls;
-    let kitchenGroup = new THREE.Group();
-    let activeColor = 0xffffff, roughnessVal = 0.6, metalnessVal = 0.05;
-    let modules = { fridge: null, pinal: null, stove: null, sink: null };
-    let kitchenLength = 3.0;
-    let wallMesh, floorMesh, backsplashMesh, leftWallMesh;
-
-    function init3D() {
-      const container = document.getElementById('canvas-container');
-      scene = new THREE.Scene();
-      scene.background = new THREE.Color(0xf1f5f9);
-
-      camera = new THREE.PerspectiveCamera(40, container.clientWidth / container.clientHeight, 0.1, 100);
-      camera.position.set(0, 1.8, 4.5);
-
-      renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('three-canvas'), antialias: true });
-      renderer.setSize(container.clientWidth, container.clientHeight);
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-      renderer.shadowMap.enabled = true;
-
-      controls = new THREE.OrbitControls(camera, renderer.domElement);
-      controls.enableDamping = true;
-      controls.dampingFactor = 0.05;
-      controls.maxPolarAngle = Math.PI / 2 - 0.01;
-
-      const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
-      scene.add(ambientLight);
-      
-      const dirLight = new THREE.DirectionalLight(0xffffff, 0.7);
-      dirLight.position.set(3, 6, 4);
-      scene.add(dirLight);
-
-      const floorGeo = new THREE.PlaneGeometry(8, 8);
-      const floorMat = new THREE.MeshStandardMaterial({ color: 0x5c4033, roughness: 0.5 });
-      floorMesh = new THREE.Mesh(floorGeo, floorMat);
-      floorMesh.rotation.x = -Math.PI / 2;
-      floorMesh.position.set(0, 0, -1);
-      scene.add(floorMesh);
-
-      const wallGeo = new THREE.PlaneGeometry(8, 5);
-      const wallMat = new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.9 });
-      wallMesh = new THREE.Mesh(wallGeo, wallMat);
-      wallMesh.position.set(0, 2.5, -2.0);
-      scene.add(wallMesh);
-
-      const leftWallGeo = new THREE.PlaneGeometry(8, 5);
-      leftWallMesh = new THREE.Mesh(leftWallGeo, wallMat);
-      leftWallMesh.rotation.y = Math.PI / 2;
-      leftWallMesh.position.set(-3.5, 2.5, -1);
-      scene.add(leftWallMesh);
-
-      const bsGeo = new THREE.PlaneGeometry(7, 0.65);
-      const bsMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.2 });
-      backsplashMesh = new THREE.Mesh(bsGeo, bsMat);
-      backsplashMesh.position.set(0, 1.22, -1.98);
-      scene.add(backsplashMesh);
-
-      scene.add(kitchenGroup);
-      buildBaseKitchen();
-      animate();
-    }
-
-    function buildBaseKitchen() {
-      while(kitchenGroup.children.length > 0){ 
-        kitchenGroup.remove(kitchenGroup.children[0]); 
-      }
-
-      const mat = new THREE.MeshStandardMaterial({ 
-        color: activeColor, 
-        roughness: roughnessVal, 
-        metalness: metalnessVal 
-      });
-      const topMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.3 });
-      const handleType = document.getElementById('handle-type').value;
-
-      const botGeo = new THREE.BoxGeometry(kitchenLength, 0.82, 0.6);
-      const botMesh = new THREE.Mesh(botGeo, mat);
-      botMesh.position.set(0, 0.41, -1.5);
-      kitchenGroup.add(botMesh);
-
-      const doorCount = Math.max(2, Math.round(kitchenLength / 0.6));
-      const sectionWidth = kitchenLength / doorCount;
-      const lineMat = new THREE.LineBasicMaterial({ color: 0x333333, linewidth: 2 });
-
-      for(let i = 1; i < doorCount; i++) {
-        const xPos = -kitchenLength/2 + i * sectionWidth;
-        const lineGeo = new THREE.BufferGeometry().setFromPoints([
-          new THREE.Vector3(xPos, 0.05, -1.19),
-          new THREE.Vector3(xPos, 0.80, -1.19)
-        ]);
-        const line = new THREE.Line(lineGeo, lineMat);
-        kitchenGroup.add(line);
-
-        if(handleType === 'handles') {
-          const handleGeo = new THREE.BoxGeometry(0.02, 0.15, 0.03);
-          const handleMat = new THREE.MeshStandardMaterial({ color: 0xcccccc, metalness: 0.9 });
-          const handleMesh = new THREE.Mesh(handleGeo, handleMat);
-          handleMesh.position.set(xPos - 0.05, 0.45, -1.17);
-          kitchenGroup.add(handleMesh);
-        }
-      }
-
-      const topGeo = new THREE.BoxGeometry(kitchenLength + 0.04, 0.04, 0.64);
-      const topMesh = new THREE.Mesh(topGeo, topMat);
-      topMesh.position.set(0, 0.84, -1.48);
-      kitchenGroup.add(topMesh);
-
-      const upGeo = new THREE.BoxGeometry(kitchenLength, 0.65, 0.35);
-      const upMesh = new THREE.Mesh(upGeo, mat);
-      upMesh.position.set(0, 1.75, -1.625);
-      kitchenGroup.add(upMesh);
-    }
-
-    function updateKitchenLength() {
-      const val = parseFloat(document.getElementById('length').value);
-      if(!isNaN(val) && val >= 1.0) {
-        kitchenLength = val;
-        buildBaseKitchen();
-      }
-    }
-
-    function changeColor(hexColor, el) {
-      activeColor = hexColor;
-      document.querySelectorAll('.color-option').forEach(b => b.classList.remove('active'));
-      el.classList.add('active');
-      buildBaseKitchen();
-    }
-
-    function updateFinish() {
-      const type = document.getElementById('finish-type').value;
-      roughnessVal = (type === 'matte') ? 0.7 : 0.1;
-      metalnessVal = (type === 'matte') ? 0.02 : 0.25;
-      buildBaseKitchen();
-    }
-
-    function updateRoomColors() {
-      const wallColor = parseInt(document.getElementById('wall-color').value);
-      const floorColor = parseInt(document.getElementById('floor-color').value);
-      const bsColor = parseInt(document.getElementById('backsplash-color').value);
-
-      if(wallMesh) {
-        wallMesh.material.color.setHex(wallColor);
-        leftWallMesh.material.color.setHex(wallColor);
-      }
-      if(floorMesh) floorMesh.material.color.setHex(floorColor);
-      if(backsplashMesh) backsplashMesh.material.color.setHex(bsColor);
-    }
-
-    function toggleModule(type) {
-      const btn = document.getElementById(`btn-${type}`);
-      
-      if (modules[type]) {
-        scene.remove(modules[type]);
-        modules[type] = null;
-        btn.classList.remove('added');
-        if (type === 'stove') document.getElementById('pos-stove-row').style.display = 'none';
-        if (type === 'sink') document.getElementById('pos-sink-row').style.display = 'none';
-      } else {
-        btn.classList.add('added');
-        if (type === 'fridge') {
-          const geo = new THREE.BoxGeometry(0.6, 1.7, 0.6);
-          const mat = new THREE.MeshStandardMaterial({ color: 0x95a5a6, metalness: 0.5 });
-          const mesh = new THREE.Mesh(geo, mat);
-          mesh.position.set(-kitchenLength/2 - 0.35, 0.85, -1.5);
-          scene.add(mesh);
-          modules.fridge = mesh;
-        } else if (type === 'pinal') {
-          const geo = new THREE.BoxGeometry(0.55, 2.1, 0.55);
-          const mat = new THREE.MeshStandardMaterial({ color: activeColor, roughness: roughnessVal });
-          const mesh = new THREE.Mesh(geo, mat);
-          mesh.position.set(kitchenLength/2 + 0.3, 1.05, -1.5);
-          scene.add(mesh);
-          modules.pinal = mesh;
-        } else if (type === 'stove') {
-          const geo = new THREE.BoxGeometry(0.5, 0.04, 0.5);
-          const mat = new THREE.MeshStandardMaterial({ color: 0x111111 });
-          const mesh = new THREE.Mesh(geo, mat);
-          mesh.position.set(-0.4, 0.87, -1.48);
-          scene.add(mesh);
-          modules.stove = mesh;
-          document.getElementById('pos-stove-row').style.display = 'flex';
-        } else if (type === 'sink') {
-          const geo = new THREE.BoxGeometry(0.45, 0.04, 0.4);
-          const mat = new THREE.MeshStandardMaterial({ color: 0xbdc3c7, metalness: 0.8 });
-          const mesh = new THREE.Mesh(geo, mat);
-          mesh.position.set(0.4, 0.87, -1.48);
-          scene.add(mesh);
-          modules.sink = mesh;
-          document.getElementById('pos-sink-row').style.display = 'flex';
-        }
-      }
-      calculateTotal();
-    }
-
-    function moveModule(type, step) {
-      if (modules[type]) {
-        const limit = kitchenLength / 2 - 0.3;
-        let newX = modules[type].position.x + step;
-        if (newX >= -limit && newX <= limit) {
-          modules[type].position.x = newX;
-        }
-      }
-    }
-
-    function calculateTotal() {
-      const pricePerMeter = parseInt(document.getElementById('material').value) || 3800000;
-      const len = parseFloat(document.getElementById('length').value) || 3.0;
-      let total = pricePerMeter * len;
-
-      if (modules.fridge) total += 5000000;
-      if (modules.pinal) total += 1500000;
-      if (modules.stove) total += 2000000;
-      if (modules.sink) total += 800000;
-
-      document.getElementById('total-price').innerText = total.toLocaleString('uz-UZ') + " сўм";
-      return total;
-    }
-
-    function sendToBot() {
-      const len = document.getElementById('length').value;
-      const total = document.getElementById('total-price').innerText;
-      const data = {
-        city: "Самарқанд",
-        length: len + " метр",
-        totalPrice: total
-      };
-      if(tg && tg.sendData) {
-        tg.sendData(JSON.stringify(data));
-      } else {
-        alert("Буюртма қабул қилинди! Нарх: " + total);
-      }
-    }
-
-    function animate() {
-      requestAnimationFrame(animate);
-      if(controls) controls.update();
-      if(renderer && scene && camera) {
-        renderer.render(scene, camera);
-      }
-    }
-
-    window.onload = () => {
-      init3D();
-      calculateTotal();
-    };
-  </script>
-</body>
-</html>
