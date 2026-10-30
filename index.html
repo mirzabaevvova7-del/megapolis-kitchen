@@ -3,275 +3,667 @@
 <html lang="uz">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MEGAPOLIS — 3D Furniture Designer</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MEGAPOLIS 3D Furniture Studio</title>
 <style>
 *{box-sizing:border-box}
-body{margin:0;background:#111827;color:#fff;font-family:Arial,sans-serif}
-header{padding:15px 18px;background:#080d18;border-bottom:1px solid #30394a}
-header h2{margin:0;color:#e6b85c;font-size:20px}
-header small{color:#aab3c2}
-.app{display:grid;grid-template-columns:280px 1fr;min-height:calc(100vh - 65px)}
-.panel{padding:16px;background:#151e2d;overflow:auto}
-h3{font-size:15px;color:#e6b85c;margin:8px 0 14px}
-label{display:block;font-size:12px;color:#c1c9d6;margin:12px 0 5px}
-input,select,button{width:100%;padding:11px;border-radius:7px;border:1px solid #46536a;background:#202c40;color:white}
-button{background:#c18d36;border:0;color:#111827;font-weight:bold;margin-top:10px;cursor:pointer}
-button.secondary{background:#34445d;color:white}
-button.danger{background:#9e3c3c;color:white}
-.viewer{min-height:600px;position:relative;background:#202b3c}
-#scene{width:100%;height:100%;min-height:600px;display:block}
-.hint{position:absolute;bottom:12px;left:12px;background:#111c2dcc;padding:10px;border-radius:8px;font-size:12px;color:#d5dce8}
-.module{padding:10px;background:#26344a;border-radius:8px;margin:7px 0;cursor:pointer}
-.module.active{outline:2px solid #e6b85c}
-.stats{font-size:12px;color:#bdc7d5;line-height:1.8}
-@media(max-width:750px){
-.app{grid-template-columns:1fr}
-.panel{order:2}
-.viewer{order:1;min-height:430px}
-#scene{min-height:430px}
+body{margin:0;background:#eef0f2;color:#202832;font:14px Arial}
+header{background:#17212b;color:white;padding:14px 20px;display:flex;justify-content:space-between;align-items:center;gap:10px;position:sticky;top:0;z-index:4}
+.brand{font-weight:900;letter-spacing:2px;font-size:20px}
+.brand small{display:block;color:#c9a66b;font-size:10px;letter-spacing:4px}
+.actions,.buttons{display:flex;gap:7px;flex-wrap:wrap}
+button{cursor:pointer;font:inherit;border:1px solid #cbd2d9;border-radius:8px;padding:9px 11px;background:white;color:#202832;font-weight:700}
+.primary{background:#17212b;color:white;border-color:#17212b}
+.gold{background:#c9a66b;border-color:#c9a66b}
+.danger{color:#a32e2e}
+main{max-width:1500px;margin:auto;padding:16px;display:grid;grid-template-columns:350px 1fr;gap:15px}
+.panel,.viewer{background:white;border:1px solid #dce1e6;border-radius:13px;overflow:hidden}
+.panel{padding:15px;max-height:calc(100vh - 90px);overflow:auto}
+h1{font-size:22px;margin:0 0 5px}
+h2{font-size:14px;margin:0 0 9px}
+.muted{color:#66717d;font-size:12px}
+.section{padding-bottom:14px;margin-bottom:14px;border-bottom:1px solid #dce1e6}
+label{display:block;font-size:12px;font-weight:bold;margin:9px 0 4px}
+input,select{width:100%;padding:9px;border:1px solid #cbd2d9;border-radius:8px;background:white}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.grid2 button{text-align:left;font-size:12px}
+.swatches{display:flex;gap:9px}
+.swatch{width:30px;height:30px;padding:0;border-radius:50%;border:2px solid #999}
+.swatch.active{outline:3px solid #c9a66b;outline-offset:2px}
+.hidden{display:none!important}
+.module{display:flex;gap:6px;align-items:center;padding:7px;border:1px solid #dce1e6;border-radius:8px;margin:5px 0}
+.module.selected{border-color:#c9a66b;background:#fbf7ef}
+.module button:first-child{flex:1;text-align:left;border:0;background:transparent;padding:3px}
+.viewer-head{padding:12px 15px;border-bottom:1px solid #dce1e6;display:flex;justify-content:space-between}
+.status{color:#27845b;font-size:12px}
+#viewport{height:min(68vh,700px);min-height:380px;position:relative;background:#e7eaed;touch-action:none}
+#viewport canvas{width:100%;height:100%;display:block;touch-action:none}
+.viewtools{position:absolute;right:10px;top:10px;display:flex;gap:5px}
+.viewtools button{font-size:12px;padding:7px}
+.metrics{display:flex;gap:8px;flex-wrap:wrap;padding:12px}
+.metric{background:#f1f3f5;border-radius:8px;padding:8px 11px;font-size:11px}
+.metric b{display:block;font-size:14px}
+#estimate{font-size:21px;font-weight:900;color:#216847;margin:8px 0}
+.note{font-size:11px;color:#66717d;line-height:1.5}
+@media(max-width:850px){
+main{grid-template-columns:1fr;padding:9px}
+.panel{order:2;max-height:none}
+.viewer{order:1}
+#viewport{height:48vh;min-height:300px}
+header{padding:11px}
+.brand{font-size:16px}
+.actions button{font-size:11px;padding:7px}
+}
+@media print{
+header,.panel,.viewtools{display:none!important}
+main{display:block;padding:0}
+.viewer{border:0}
+#viewport{height:650px}
 }
 </style>
 </head>
 <body>
+
 <header>
-<h2>MEGAPOLIS KOMPANIYASI</h2>
-<small>Professional 3D Furniture Designer</small>
+<div class="brand">MEGAPOLIS<small>KOMPANIYASI</small></div>
+<div class="actions">
+<button id="save">Сақлаш</button>
+<button id="export">JSON экспорт</button>
+<button id="print">Чоп этиш</button>
+</div>
 </header>
 
-<div class="app">
+<main>
 <aside class="panel">
-<h3>МЕБЕЛЬ КОНСТРУКТОРИ</h3>
+<h1>3D мебель конструктори</h1>
+<p class="muted">Модуллардан мебель лойиҳасини тузинг.</p>
 
-<label>Мебель тури</label>
+<div class="section">
+<h2>1. Мебель тури</h2>
 <select id="type">
-<option value="base">Пастки шкаф</option>
-<option value="wall">Юқори шкаф</option>
-<option value="tall">Пенал шкаф</option>
-<option value="drawer">Тумба / яшикли шкаф</option>
+<option>Ошхона мебели</option>
+<option>Кийим шкафи</option>
+<option>Купе шкаф</option>
+<option>Комод</option>
+<option>ТВ тумба</option>
+<option>Иш столи</option>
+<option>Стеллаж</option>
 </select>
-<button id="add">+ Модул қўшиш</button>
+</div>
 
-<h3 style="margin-top:24px">Модул ўлчамлари (мм)</h3>
-<label>Эни</label>
-<input id="width" type="number" value="600" min="100">
-<label>Баландлиги</label>
-<input id="height" type="number" value="720" min="100">
-<label>Чуқурлиги</label>
-<input id="depth" type="number" value="560" min="100">
-<button id="apply">Ўлчамни қўллаш</button>
+<div class="section">
+<h2>2. Модул қўшиш</h2>
+<div class="grid2">
+<button data-add="base">＋ Пастки тумба</button>
+<button data-add="drawer">＋ Тортмали тумба</button>
+<button data-add="wall">＋ Юқори шкаф</button>
+<button data-add="tall">＋ Пенал</button>
+<button data-add="corner">＋ Бурчак модуль</button>
+<button data-add="shelf">＋ Полкали секция</button>
+<button data-add="door">＋ Эшикли секция</button>
+<button data-add="open">＋ Очиқ секция</button>
+</div>
+</div>
 
-<h3 style="margin-top:24px">Материал ва ранг</h3>
-<label>Фасад ранги</label>
-<select id="color">
-<option value="#eeeeeb">Оқ</option>
-<option value="#777b80">Кулранг</option>
-<option value="#24272d">Қора</option>
-<option value="#b78a58">Ёғоч ранги</option>
-<option value="#d8c5a5">Беж</option>
-<option value="#263d55">Кўк</option>
-</select>
+<div class="section">
+<h2>3. Танланган модул (мм)</h2>
+<div id="empty" class="note">Модул танланмаган.</div>
+<div id="editor" class="hidden">
+<label>Номи</label>
+<input id="name">
+<div class="grid3">
+<div><label>Эни</label><input id="w" type="number" min="80"></div>
+<div><label>Бўйи</label><input id="h" type="number" min="80"></div>
+<div><label>Чуқурлиги</label><input id="d" type="number" min="80"></div>
+</div>
+<div class="grid2">
+<div><label>X жойлашуви</label><input id="x" type="number"></div>
+<div><label>Z жойлашуви</label><input id="z" type="number"></div>
+</div>
+<div class="buttons" style="margin-top:9px">
+<button class="primary" id="apply">Қўллаш</button>
+<button class="danger" id="delete">Ўчириш</button>
+</div>
+<div class="buttons" style="margin-top:7px">
+<button id="left">← Чапга</button>
+<button id="right">Ўнгга →</button>
+</div>
+</div>
+</div>
+
+<div class="section">
+<h2>4. Материаллар ва ранглар</h2>
 <label>Корпус материали</label>
-<select id="bodyColor">
-<option value="#b9b6ae">Оқ LDSP</option>
-<option value="#777b80">Кулранг LDSP</option>
-<option value="#302c29">Қора LDSP</option>
-<option value="#98734d">Ёғоч LDSP</option>
+<select id="body">
+<option>ЛДСП 16 мм</option>
+<option>ЛДСП 18 мм</option>
+<option>Намга чидамли ЛДСП</option>
+<option>Фанера 18 мм</option>
+<option>МДФ 18 мм</option>
 </select>
-<button id="material">Материални қўллаш</button>
 
-<h3 style="margin-top:24px">Модуллар рўйхати</h3>
-<div id="modules"></div>
-<button class="danger" id="remove">Танланган модулни ўчириш</button>
-<button class="secondary" id="reset">Лойиҳани тозалаш</button>
+<label>Фасад материали</label>
+<select id="facadeMat">
+<option>МДФ плёнка</option>
+<option>МДФ эмаль</option>
+<option>Акрил</option>
+<option>ЛДСП</option>
+<option>Шпон</option>
+<option>Массив ёғоч</option>
+</select>
 
-<h3 style="margin-top:24px">Лойиҳа маълумоти</h3>
-<div class="stats" id="stats">Модуллар: 0</div>
+<label>Фасад ранги</label>
+<div class="swatches">
+<button class="swatch active" data-color="#e8e5dc" style="background:#e8e5dc"></button>
+<button class="swatch" data-color="#555b60" style="background:#555b60"></button>
+<button class="swatch" data-color="#a87950" style="background:#a87950"></button>
+<button class="swatch" data-color="#c9b99c" style="background:#c9b99c"></button>
+<button class="swatch" data-color="#292d31" style="background:#292d31"></button>
+<button class="swatch" data-color="#d9e2e6" style="background:#d9e2e6"></button>
+</div>
+
+<label>Столешница</label>
+<select id="top">
+<option value="#55585b">Қора тош</option>
+<option value="#d4d0c7">Оқ мармар</option>
+<option value="#96714f">Ёғоч</option>
+<option value="#85898b">Кулранг тош</option>
+</select>
+
+<label>Ручка</label>
+<select id="handle">
+<option value="dark">Қора металл</option>
+<option value="gold">Олтин ранг</option>
+<option value="none">Ручкасиз</option>
+</select>
+
+<label>Фурнитура</label>
+<select id="hardware">
+<option>Стандарт</option>
+<option>Blum</option>
+<option>Hettich</option>
+<option>GTV</option>
+</select>
+</div>
+
+<div class="section">
+<h2>5. Смета (тахминий)</h2>
+<label>Материал 1 м² (сўм)</label>
+<input id="pSheet" type="number" value="180000">
+<label>Қирра 1 метр (сўм)</label>
+<input id="pEdge" type="number" value="2500">
+<label>Фурнитура / модул (сўм)</label>
+<input id="pHard" type="number" value="85000">
+<label>Иш ҳақи ва қўшимча (%)</label>
+<input id="labor" type="number" value="30">
+<button class="gold" id="calc" style="width:100%;margin-top:9px">Сметани ҳисоблаш</button>
+<div id="estimate">0 сўм</div>
+<div id="estimateInfo" class="note">Модуллар қўшилмаган.</div>
+</div>
+
+<div class="section">
+<h2>6. Модуллар рўйхати</h2>
+<div id="list"></div>
+</div>
+
+<div class="section">
+<h2>7. Лойиҳа</h2>
+<div class="buttons">
+<button id="load">Сақланганни очиш</button>
+<button class="danger" id="clear">Тозалаш</button>
+</div>
+<button class="primary" id="telegram" style="width:100%;margin-top:8px">Telegram орқали улашиш</button>
+<p class="note">Лойиҳа браузер хотирасида сақланади. Telegram тугмаси лойиҳа матнини улашишга тайёрлайди.</p>
+</div>
 </aside>
 
-<main class="viewer">
-<canvas id="scene"></canvas>
-<div class="hint">3D кўриниш: бармоқ билан айлантиринг, икки бармоқ билан яқинлаштиринг.</div>
-</main>
+<section class="viewer">
+<div class="viewer-head">
+<b>3D иш майдони</b>
+<span id="status" class="status">Юкланмоқда…</span>
 </div>
+<div id="viewport">
+<div class="viewtools">
+<button id="zin">＋ Яқин</button>
+<button id="zout">－ Узоқ</button>
+<button id="reset">↺ Қайта</button>
+</div>
+</div>
+<div class="metrics">
+<div class="metric">Модуллар<b id="count">0</b></div>
+<div class="metric">Корпус<b id="bodyInfo">ЛДСП 16 мм</b></div>
+<div class="metric">Умумий кенглик<b id="sizeInfo">0 мм</b></div>
+<div class="metric">Бирлик<b>мм</b></div>
+</div>
+</section>
+</main>
 
 <script type="module">
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
-import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/controls/OrbitControls.js';
+import {OrbitControls} from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/controls/OrbitControls.js';
 
-const canvas=document.querySelector('#scene');
-const scene=new THREE.Scene();
-scene.background=new THREE.Color('#202b3c');
+const $=id=>document.getElementById(id);
 
-const camera=new THREE.PerspectiveCamera(45,1,0.1,100);
+const presets={
+base:[600,720,560],
+drawer:[600,720,560],
+wall:[600,720,350],
+tall:[600,2100,600],
+corner:[900,720,900],
+shelf:[600,720,300],
+door:[600,2100,580],
+open:[600,720,350]
+};
+
+const names={
+base:'Пастки тумба',
+drawer:'Тортмали тумба',
+wall:'Юқори шкаф',
+tall:'Пенал',
+corner:'Бурчак модуль',
+shelf:'Полкали секция',
+door:'Эшикли секция',
+open:'Очиқ секция'
+};
+
+let mods=[];
+let sel=-1;
+let color='#e8e5dc';
+let scene,camera,renderer,controls,group;
+const viewport=$('viewport');
+
+function init(){
+scene=new THREE.Scene();
+scene.background=new THREE.Color('#e7eaed');
+
+camera=new THREE.PerspectiveCamera(
+42,viewport.clientWidth/viewport.clientHeight,.1,100
+);
 camera.position.set(5,4,7);
 
-const renderer=new THREE.WebGLRenderer({canvas,antialias:true});
+renderer=new THREE.WebGLRenderer({antialias:true});
 renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.setSize(viewport.clientWidth,viewport.clientHeight);
 renderer.shadowMap.enabled=true;
-renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+renderer.outputColorSpace=THREE.SRGBColorSpace;
+viewport.prepend(renderer.domElement);
 
-const controls=new OrbitControls(camera,renderer.domElement);
-controls.enableDamping=true;
-controls.target.set(1,1,0);
+scene.add(new THREE.HemisphereLight(0xffffff,0x77716a,2));
 
-scene.add(new THREE.HemisphereLight(0xffffff,0x536070,2));
-const light=new THREE.DirectionalLight(0xffffff,3);
-light.position.set(4,8,5);
+let light=new THREE.DirectionalLight(0xffffff,2.5);
+light.position.set(5,9,6);
 light.castShadow=true;
 scene.add(light);
 
-const floor=new THREE.Mesh(
- new THREE.PlaneGeometry(30,30),
- new THREE.MeshStandardMaterial({color:'#aab0b8',roughness:0.9})
+let ground=new THREE.Mesh(
+new THREE.PlaneGeometry(30,30),
+new THREE.MeshStandardMaterial({color:'#d5d9dc',roughness:.9})
 );
-floor.rotation.x=-Math.PI/2;
-floor.position.y=-0.02;
-floor.receiveShadow=true;
-scene.add(floor);
+ground.rotation.x=-Math.PI/2;
+ground.position.y=-.03;
+ground.receiveShadow=true;
+scene.add(ground);
 
-const grid=new THREE.GridHelper(20,40,0x64748b,0x46536a);
-scene.add(grid);
+scene.add(new THREE.GridHelper(20,40,0x9da5ac,0xc5cbd0));
 
-let items=[];
-let selected=null;
-let nextId=1;
+group=new THREE.Group();
+scene.add(group);
 
-function makeCabinet(type,w,h,d,facade,body){
- const group=new THREE.Group();
- const bodyMat=new THREE.MeshStandardMaterial({color:body,roughness:0.8});
- const frontMat=new THREE.MeshStandardMaterial({color:facade,roughness:0.35});
- function box(x,y,z,sx,sy,sz,mat){
-  const m=new THREE.Mesh(new THREE.BoxGeometry(sx,sy,sz),mat);
-  m.position.set(x,y,z);
-  m.castShadow=true;m.receiveShadow=true;
-  group.add(m);return m;
- }
- // Корпус
- box(0,h/2,0,w-0.025,h-0.025,d-0.025,bodyMat);
- // Олд фасад панели
- const frontZ=d/2+0.012;
- box(0,h/2,frontZ,w-0.035,h-0.035,0.035,frontMat);
- // Фасадга вертикал ажратгич чизиғи
- if(type==='drawer'){
-  for(let i=1;i<3;i++){
-   const line=box(0,h*i/3,frontZ+0.021,w-0.08,0.008,0.008,
-    new THREE.MeshStandardMaterial({color:'#777777'}));
-  }
- }
- // Ручка
- const handleMat=new THREE.MeshStandardMaterial({color:'#b99a61',metalness:0.8,roughness:0.25});
- const handle=box(w*0.25,h*0.52,frontZ+0.045,0.12,0.025,0.025,handleMat);
- if(type==='wall'){
-  // Юқори шкаф учун икки эшик
-  handle.position.x=w*0.25;
- }
- group.userData={type,w,h,d,facade,body};
- return group;
+controls=new OrbitControls(camera,renderer.domElement);
+controls.enableDamping=true;
+controls.target.set(0,1,0);
+controls.maxPolarAngle=Math.PI*.49;
+
+renderer.setAnimationLoop(()=>{
+controls.update();
+renderer.render(scene,camera);
+});
+
+$('status').textContent='3D тайёр';
 }
-
-function addCabinet(){
- const type=document.querySelector('#type').value;
- const w=Number(document.querySelector('#width').value)/1000;
- const h=Number(document.querySelector('#height').value)/1000;
- const d=Number(document.querySelector('#depth').value)/1000;
- const facade=document.querySelector('#color').value;
- const body=document.querySelector('#bodyColor').value;
- if(w<=0||h<=0||d<=0)return alert('Ўлчамларни текширинг');
- const obj=makeCabinet(type,w,h,d,facade,body);
- obj.position.set(items.reduce((sum,x)=>sum+x.userData.w,0)+w/2,0,0);
- obj.userData.id=nextId++;
- scene.add(obj);
- items.push(obj);
- select(obj);
- update();
-}
-
-function select(obj){
- selected=obj;
- items.forEach(x=>{
-  x.traverse(o=>{
-   if(o.isMesh)o.material.emissive=new THREE.Color(x===obj?0x292010:0x000000);
-  });
- });
- updateList();
- if(obj){
-  document.querySelector('#width').value=Math.round(obj.userData.w*1000);
-  document.querySelector('#height').value=Math.round(obj.userData.h*1000);
-  document.querySelector('#depth').value=Math.round(obj.userData.d*1000);
-  document.querySelector('#color').value=obj.userData.facade;
-  document.querySelector('#bodyColor').value=obj.userData.body;
- }
-}
-
-function rebuild(){
- if(!selected)return;
- const old=selected;
- const p=old.position.clone();
- const r=old.rotation.clone();
- const w=Number(document.querySelector('#width').value)/1000;
- const h=Number(document.querySelector('#height').value)/1000;
- const d=Number(document.querySelector('#depth').value)/1000;
- if(w<=0||h<=0||d<=0)return alert('Ўлчам нотўғри');
- const obj=makeCabinet(old.userData.type,w,h,d,
-  document.querySelector('#color').value,
-  document.querySelector('#bodyColor').value);
- obj.userData.id=old.userData.id;
- obj.position.copy(p);obj.rotation.copy(r);
- scene.remove(old);
- scene.add(obj);
- items[items.indexOf(old)]=obj;
- select(obj);
- update();
-}
-
-function updateList(){
- const el=document.querySelector('#modules');
- el.innerHTML='';
- items.forEach((obj,i)=>{
-  const div=document.createElement('div');
-  div.className='module'+(obj===selected?' active':'');
-  div.textContent=`Модул ${i+1} — ${Math.round(obj.userData.w*1000)} мм`;
-  div.onclick=()=>select(obj);
-  el.appendChild(div);
- });
-}
-
-function update(){
- updateList();
- document.querySelector('#stats').textContent=
- `Модуллар: ${items.length} | Умумий кенглик: ${Math.round(items.reduce((s,x)=>s+x.userData.w,0)*1000)} мм`;
-}
-
-document.querySelector('#add').onclick=addCabinet;
-document.querySelector('#apply').onclick=rebuild;
-document.querySelector('#material').onclick=rebuild;
-document.querySelector('#remove').onclick=()=>{
- if(!selected)return;
- scene.remove(selected);
- items=items.filter(x=>x!==selected);
- selected=null;update();
-};
-document.querySelector('#reset').onclick=()=>{
- items.forEach(x=>scene.remove(x));
- items=[];selected=null;update();
-};
 
 function resize(){
- const w=canvas.clientWidth,h=canvas.clientHeight;
- camera.aspect=w/h;camera.updateProjectionMatrix();
- renderer.setSize(w,h,false);
+if(!renderer)return;
+camera.aspect=viewport.clientWidth/viewport.clientHeight;
+camera.updateProjectionMatrix();
+renderer.setSize(viewport.clientWidth,viewport.clientHeight);
 }
-new ResizeObserver(resize).observe(canvas.parentElement);
-resize();
+window.addEventListener('resize',resize);
 
-function animate(){
- requestAnimationFrame(animate);
- controls.update();
- renderer.render(scene,camera);
+function mat(c,r=.5,m=0){
+return new THREE.MeshStandardMaterial({
+color:c,roughness:r,metalness:m
+});
 }
-animate();
-addCabinet();
+
+function addBox(g,w,h,d,x,y,z,m){
+let o=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m);
+o.position.set(x,y,z);
+o.castShadow=true;
+o.receiveShadow=true;
+g.add(o);
+}
+
+function draw(){
+if(!group)return;
+group.clear();
+
+let body=mat(
+$('body').value.includes('Фанера')?'#b69a75':'#bdb7ac',
+.7
+);
+let front=mat(color,.3);
+let handle=mat(
+$('handle').value==='gold'?'#c9a66b':'#30363b',
+.25,.6
+);
+
+let max=0;
+
+mods.forEach((m,i)=>{
+let w=m.w/1000;
+let h=m.h/1000;
+let d=m.d/1000;
+let x=m.x/1000;
+let z=m.z/1000;
+
+let g=new THREE.Group();
+g.position.set(x,0,z);
+group.add(g);
+
+addBox(g,w,h,d,0,h/2,0,body);
+addBox(g,w-.035,h-.035,.02,0,h/2,d/2+.012,front);
+
+if(m.kind==='drawer'){
+for(let j=1;j<3;j++){
+addBox(g,w-.05,.012,.025,0,h*j/3,d/2+.026,mat('#383d42'));
+}
+}
+
+if(['shelf','open'].includes(m.kind)){
+let n=Math.max(2,Math.floor(h/.42));
+for(let j=1;j<n;j++){
+addBox(g,w-.04,.018,d-.04,0,h*j/n,0,body);
+}
+}
+
+if(m.kind!=='open'&&m.kind!=='shelf'&&$('handle').value!=='none'){
+addBox(g,.025,Math.min(.18,h*.3),.035,w*.34,h/2,d/2+.045,handle);
+}
+
+if(i===sel){
+let edges=new THREE.BoxHelper(g,0xc9a66b);
+group.add(edges);
+}
+
+max=Math.max(max,Math.abs(x)+w/2);
+});
+
+$('count').textContent=mods.length;
+$('bodyInfo').textContent=$('body').value;
+$('sizeInfo').textContent=Math.round(max*2000)+' мм';
+}
+
+function list(){
+let el=$('list');
+el.innerHTML='';
+
+mods.forEach((m,i)=>{
+let row=document.createElement('div');
+row.className='module'+(i===sel?' selected':'');
+
+let b=document.createElement('button');
+b.textContent=`${i+1}. ${m.name} (${m.w}×${m.h}×${m.d})`;
+b.onclick=()=>select(i);
+
+let d=document.createElement('button');
+d.textContent='×';
+d.className='danger';
+d.onclick=()=>{
+mods.splice(i,1);
+sel=-1;
+editor();
+list();
+draw();
+};
+
+row.append(b,d);
+el.append(row);
+});
+}
+
+function editor(){
+let m=mods[sel];
+
+$('empty').classList.toggle('hidden',!!m);
+$('editor').classList.toggle('hidden',!m);
+
+if(m){
+$('name').value=m.name;
+['w','h','d','x','z'].forEach(k=>$(k).value=m[k]);
+}
+
+list();
+draw();
+}
+
+function select(i){
+sel=i;
+editor();
+}
+
+function add(k){
+let [w,h,d]=presets[k];
+
+mods.push({
+kind:k,
+name:names[k],
+w,h,d,
+x:mods.length*(w+40),
+z:0
+});
+
+select(mods.length-1);
+}
+
+function apply(){
+let m=mods[sel];
+if(!m)return;
+
+m.name=$('name').value||names[m.kind];
+
+['w','h','d'].forEach(k=>{
+m[k]=Math.max(
+80,
+Math.min(
+k==='h'?3000:k==='d'?1600:4000,
+Number($(k).value)||80
+)
+);
+});
+
+['x','z'].forEach(k=>{
+m[k]=Number($(k).value)||0;
+});
+
+editor();
+}
+
+function data(){
+return {
+brand:'MEGAPOLIS KOMPANIYASI',
+type:$('type').value,
+body:$('body').value,
+facadeMaterial:$('facadeMat').value,
+color,
+top:$('top').value,
+handle:$('handle').value,
+hardware:$('hardware').value,
+modules:mods
+};
+}
+
+function save(){
+localStorage.setItem('megapolis_project',JSON.stringify(data()));
+alert('Лойиҳа браузерда сақланди.');
+}
+
+function load(){
+let s=localStorage.getItem('megapolis_project');
+if(!s)return alert('Сақланган лойиҳа йўқ');
+
+let p=JSON.parse(s);
+mods=p.modules||[];
+color=p.color||color;
+
+$('type').value=p.type||$('type').value;
+$('body').value=p.body||$('body').value;
+$('facadeMat').value=p.facadeMaterial||$('facadeMat').value;
+$('top').value=p.top||$('top').value;
+$('handle').value=p.handle||'dark';
+$('hardware').value=p.hardware||'Стандарт';
+
+document.querySelectorAll('.swatch').forEach(b=>{
+b.classList.toggle('active',b.dataset.color===color);
+});
+
+sel=mods.length?0:-1;
+editor();
+}
+
+function calc(){
+let a=0,e=0;
+
+mods.forEach(m=>{
+let w=m.w/1000;
+let h=m.h/1000;
+let d=m.d/1000;
+
+a+=2*w*h+2*h*d+2*w*d;
+e+=4*(w+h);
+});
+
+let base=
+a*(+$('pSheet').value||0)+
+e*(+$('pEdge').value||0)+
+mods.length*(+$('pHard').value||0);
+
+let sum=base*(1+(+$('labor').value||0)/100);
+
+$('estimate').textContent=
+Math.round(sum).toLocaleString('uz-UZ')+' сўм';
+
+$('estimateInfo').textContent=
+`Юза тахминан ${a.toFixed(2)} м²; қирра ${e.toFixed(1)} м. Деталлаштирилган кесим ва чиқинди ҳисобланмаган.`;
+}
+
+function msg(){
+let p=data();
+
+return `MEGAPOLIS KOMPANIYASI
+Мебель: ${p.type}
+Корпус: ${p.body}
+Фасад: ${p.facadeMaterial} / ${p.color}
+Фурнитура: ${p.hardware}
+`+p.modules.map((m,i)=>
+`${i+1}. ${m.name}: ${m.w}×${m.h}×${m.d} мм; X=${m.x}; Z=${m.z}`
+).join('\n');
+}
+
+document.querySelectorAll('[data-add]').forEach(b=>{
+b.onclick=()=>add(b.dataset.add);
+});
+
+$('apply').onclick=apply;
+
+$('delete').onclick=()=>{
+if(sel>=0){
+mods.splice(sel,1);
+sel=mods.length?Math.min(sel,mods.length-1):-1;
+editor();
+}
+};
+
+$('left').onclick=()=>{
+if(sel>=0){
+mods[sel].x-=100;
+editor();
+}
+};
+
+$('right').onclick=()=>{
+if(sel>=0){
+mods[sel].x+=100;
+editor();
+}
+};
+
+$('save').onclick=save;
+$('load').onclick=load;
+
+$('export').onclick=()=>{
+let a=document.createElement('a');
+let u=URL.createObjectURL(
+new Blob([JSON.stringify(data(),null,2)],{type:'application/json'})
+);
+a.href=u;
+a.download='megapolis-project.json';
+a.click();
+URL.revokeObjectURL(u);
+};
+
+$('print').onclick=()=>print();
+
+$('clear').onclick=()=>{
+if(confirm('Лойиҳани тозалаймизми?')){
+mods=[];
+sel=-1;
+editor();
+}
+};
+
+$('calc').onclick=calc;
+
+$('telegram').onclick=()=>{
+open(
+'https://t.me/share/url?url=&text='+encodeURIComponent(msg()),
+'_blank'
+);
+};
+
+$('zin').onclick=()=>{
+camera.position.multiplyScalar(.85);
+controls.update();
+};
+
+$('zout').onclick=()=>{
+camera.position.multiplyScalar(1.18);
+controls.update();
+};
+
+$('reset').onclick=()=>{
+camera.position.set(5,4,7);
+controls.target.set(0,1,0);
+controls.update();
+};
+
+document.querySelectorAll('.swatch').forEach(b=>{
+b.onclick=()=>{
+color=b.dataset.color;
+document.querySelectorAll('.swatch').forEach(x=>{
+x.classList.toggle('active',x===b);
+});
+draw();
+};
+});
+
+['body','top','handle'].forEach(id=>{
+$(id).onchange=draw;
+});
+
+init();
+editor();
 </script>
 </body>
 </html>
